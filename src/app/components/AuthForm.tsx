@@ -1,18 +1,19 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"  //schema-based validation using Zod
+import { useForm } from "react-hook-form"  //provides form management and validation
+import { z } from "zod" 
 import Link from "next/link"
-import { toast } from "sonner"
+import { toast } from "sonner"  //toast notifications
 
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import Image from "next/image"
 import FormField from "./FormField"
+import { useRouter } from "next/navigation"
 
 
-const authFormScheme = (type: FormType) => {
+const authFormScheme = (type: FormType) => {   // Define the schema
     return z.object({
         name: type === 'sign-up' ? z.string().min(3) : z.string().optional(),
         email: z.string().email(),
@@ -22,6 +23,7 @@ const authFormScheme = (type: FormType) => {
 
 
 const AuthForm = ({type} : { type: FormType}) => {
+    const router = useRouter() //useRouter hook to access the router object 
     const formSchema = authFormScheme(type)
 
     // Define the form using default values and validation schema.
@@ -38,9 +40,11 @@ const AuthForm = ({type} : { type: FormType}) => {
     function onSubmit(values: z.infer<typeof formSchema>) {
         try{
             if(type === "sign-up") {    
-                console.log("SIGN UP", values);
+                toast.success("Account created successfully! Please sign in.");
+                router.push("/sign-in"); // Redirect to sign-in page after successful sign-up
             } else if(type === "sign-in") {
-                console.log("SIGN IN", values);
+                toast.success("Signed in successfully!");
+                router.push("/"); // Redirect to homepage after successful sign-in
             }
         } catch (error) {
             console.error("Error submitting form:", error);
