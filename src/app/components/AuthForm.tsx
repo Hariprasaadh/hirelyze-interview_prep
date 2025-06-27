@@ -11,15 +11,17 @@ import { Form } from "@/components/ui/form"
 import Image from "next/image"
 import FormField from "./FormField"
 import { useRouter } from "next/navigation"
-
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "../../../firebase/client"
+import { signUp,signIn } from "@/lib/actions/auth.action"
 
 const authFormScheme = (type: FormType) => {   // Define the schema
     return z.object({
-        name: type === 'sign-up' ? z.string().min(3) : z.string().optional(),
+        name: type === "sign-in" ? z.string().min(3) : z.string().optional(),
         email: z.string().email(),
-        password: z.string().min(8),
-    })
-}
+        password: z.string().min(4),
+    });
+};
 
 
 const AuthForm = ({type} : { type: FormType}) => {
@@ -37,26 +39,63 @@ const AuthForm = ({type} : { type: FormType}) => {
   })
  
     // Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    async function onSubmit(values: z.infer<typeof formSchema>) {
         try{
-            if(type === "sign-up") {    
+            if(type === "sign-up") {   
+                
+                const { name, email, password } = values;
+
+                const userCredentials = await createUserWithEmailAndPassword(auth, email, password); // Create a new user with email and password
+
+                const result = await signUp({
+                    uid: userCredentials.user.uid, // Use the UID from Firebase
+                    name: name!, // Use non-null assertion since name is required for sign-up
+                    email,
+                    password,
+                })
+
+                if(!result.success) {
+                    toast.error(result?.message || "Failed to create account. Please try again.");
+                    return;
+                }
+
                 toast.success("Account created successfully! Please sign in.");
                 router.push("/sign-in"); // Redirect to sign-in page after successful sign-up
-            } else if(type === "sign-in") {
+
+            } else if(type === "sign-in") { // Handle sign-in
+
+                const { email, password } = values;
+                
+                const userCredentials = await signInWithEmailAndPassword(auth, email, password); // Sign in the user with email and password
+                const idToken = await userCredentials.user.getIdToken(); // Get the ID token for the signed-in user
+
+                if(!idToken) {
+                    toast.error("Failed to sign in. Please try again.");
+                    return;
+                }
+
+                await signIn({
+                    email,
+                    idToken,
+                }); 
+                
                 toast.success("Signed in successfully!");
                 router.push("/"); // Redirect to homepage after successful sign-in
             }
+
         } catch (error) {
             console.error("Error submitting form:", error);
-            toast.error("Something went wrong, please try again later.");
+            toast.error(`There was an error: ${error}`);
         }
-    }
+    };
 
     const isSignIn = type === "sign-in"; 
+
   return (
     <div className="card-border lg:min-w-[566px]">
         <div className="flex flex-col gap-6 card py-14 px-10">
             <div className="flex flex-row gap-2 justify-center">
+
                 <Image
                     src="/logo.png"
                     alt="Logo"
@@ -64,19 +103,26 @@ const AuthForm = ({type} : { type: FormType}) => {
                     height={32}
                     className="rounded-full"
                 />
+
                 <h2 className="text-primary-100">HireLyze</h2>
+
             </div> 
+
             <h3>Practice. Perfect. Perform — with AI by Your Side.</h3>
             
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">
+
                 {!isSignIn && (
                     <FormField control={form.control} name="name" label="Name" placeholder="Enter your name" type="text" />
                 )}
+
                 <FormField control={form.control} name="email" label="Email" placeholder="Enter your email" type="email" />
+                
                 <FormField control={form.control} name="password" label="Password" placeholder="Enter your password" type="password" />
 
                 <Button className="btn" type="submit">{isSignIn? 'Sign In':'Create an Account'}</Button>
+
             </form>
             </Form>
 
@@ -89,7 +135,8 @@ const AuthForm = ({type} : { type: FormType}) => {
         </div>
 
     </div>
-  )
-}
 
-export default AuthForm
+  );
+};
+
+export default AuthForm;
