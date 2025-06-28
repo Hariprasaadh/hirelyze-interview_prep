@@ -36,6 +36,14 @@ interface User {
   name: string;
   email: string;
   id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface AuthResponse {
+    success: boolean;
+    message: string;
+    user?: User;
 }
 
 interface InterviewCardProps {
