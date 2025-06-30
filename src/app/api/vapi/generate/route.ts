@@ -3,6 +3,7 @@ import {google} from "@ai-sdk/google"
 import { getRandomInterviewCover } from "@/lib/utils";
 import { db } from "../../../../../firebase/admin";
 
+// This is the route for the vapi workflow to generate interview questions
 export async function GET(){
     return Response.json({success: true, data: 'THANK YOU!'}, {status: 200});
 }
