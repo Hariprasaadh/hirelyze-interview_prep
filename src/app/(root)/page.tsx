@@ -3,9 +3,9 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import InterviewCard from '../components/InterviewCard'
-import { getCurrentUser, getInterviewByUserId, getLatestInterviews } from '@/lib/actions/auth.action'
+import { getCurrentUser } from '@/lib/actions/auth.action'
+import { getInterviewByUserId, getLatestInterviews } from '@/lib/actions/general.action'
 import SignOutButton from '../components/SignOutButton'
-
 
 const page = async () => {
 
