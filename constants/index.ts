@@ -97,6 +97,12 @@ export const mappings = {
   "aws amplify": "amplify",
 };
 
+
+// This is the default interviewer assistant configuration
+// It is used to create a new assistant for the interviewer role in the interview process
+// It includes the name, first message, transcriber, voice, and model configurations
+// The model configuration includes a system message that guides the assistant's behavior during the interview.
+
 export const interviewer: CreateAssistantDTO = {
   name: "Interviewer",
   firstMessage:
