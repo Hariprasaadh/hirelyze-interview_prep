@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { vapi } from "@/lib/vapi.sdk"; // Importing the VAPI SDK
 import { interviewer } from "../../../constants";
+import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {  // This enum represents the different states of the call
   INACTIVE = 'INACTIVE',
@@ -76,10 +77,11 @@ const Agent = ({ userName, userId, type, interviewId, questions }: AgentProps) =
   const handleGenerateFeedback = async (messages: SavedMessage[]) => {
     console.log("Generating feedback for messages");
 
-    const { success, id } = {
-      success: true,
-      id: 'feedback-id-12345', // Mocked feedback ID
-    }
+    const { success, feedbackId: id } = await createFeedback({
+      interviewId: interviewId!,  // not null assertion, assuming interviewId is always provided
+      userId: userId!,
+      transcript: messages
+    })
 
     if (success && id) {
       router.push(`/interview/${interviewId}/feedback`);
